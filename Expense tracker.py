@@ -101,7 +101,6 @@ class Expense:
         while True:
             try:
                 input_date = input("Enter date (YYYY-MM-DD) or press 'ENTER' for today's date : ").strip()
-                
                 if not input_date:
                     now = datetime.now()
                     date = now.strftime("%Y-%m-%d") #strftime = string format time (Convert datetime to string)
@@ -215,6 +214,27 @@ class Expense:
         else:
             print("Please choose valid option.")
 
+    def monthly_overview(self):
+        total_amt = {}
+        for expense in self.expenses:
+            date = expense["Date"]
+            month = date[5:7]
+            if month not in total_amt:
+                total_amt[month] =  {"dates":[],"total":0}
+            total_amt[month]["dates"].append(date)
+            total_amt[month]["total"]+= expense["Amount"]
+
+        for month,data in sorted(total_amt.items()):
+            print(f"\nMonth : {month}")
+            print(f"{'Date':<15} {'Amount':>10}")
+            print("-" * 25)
+            for expense in self.expenses:
+                if expense["Date"][5:7] == month:
+                    print(f"{expense['Date']:<15} Rs.{expense['Amount']:>8.2f}")
+            print("-" * 25)
+            print(f"{'Total':<15} Rs.{data['total']:>8.2f}")
+        
+        input("press 'Enter' to return to menu")
 
     def run_program(self):
         self.display_heading()
@@ -231,7 +251,7 @@ class Expense:
                 elif choice == 3:
                     self.exp_breakdown()
                 elif choice == 4:
-                    print("code Left")
+                    self.monthly_overview()
                 elif choice == 5:
                     print("code Left")
                 elif choice == 6:
