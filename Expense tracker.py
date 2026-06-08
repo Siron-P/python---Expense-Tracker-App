@@ -1,6 +1,7 @@
 import csv
 import os
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 class Expense:
     def __init__(self):
@@ -17,8 +18,9 @@ class Expense:
         print("2. View All Expense")
         print("3. View Expense Breakdown")
         print("4. Monthly Overview")
-        print("5. Delete Expense")
-        print("6. Exit the program....")
+        print("5. View Chart")
+        print("6. Delete Expense")
+        print("7. Exit the program....")
         print("_"*37,"\n")
 
     def load_expense(self):
@@ -166,7 +168,7 @@ class Expense:
             print("No Expenses Found!\n")
             return
         
-        print(f"{'-'*37}")
+        self.display_heading()
         print("Expenses Breakdown")
         print(f"{'-'*37}")
 
@@ -192,8 +194,6 @@ class Expense:
             for category, total in sorted(total_category.items()):
                 print("-"*70)
                 print(f"{category:<20}Rs.{total:.2f}")
-                print("-"*70)
-                input("Press 'Enter' to return to menu.")
 
         elif choose_exp in all_category:
             print("-"*66)
@@ -209,12 +209,22 @@ class Expense:
                 print("="*66)
                 print(f"{user_choice:<20} Rs.{total:.2f}")
                 print("="*66)
-                input("Press 'Enter' to return to menu.\n")
 
         else:
             print("Please choose valid option.")
 
+        input("\nPress 'Enter' to return to menu.\n")
+
     def monthly_overview(self):
+        self.display_heading()
+        print(f"MONTHLY OVERVIEW\n{'_'*37}")
+
+        monthly_file = "monthly_summary.csv"
+        if not os.path.exists(monthly_file):
+            with open(monthly_file,"w",newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Date","Amount"])
+
         total_amt = {}
         for expense in self.expenses:
             date = expense["Date"]
@@ -223,6 +233,13 @@ class Expense:
                 total_amt[month] =  {"dates":[],"total":0}
             total_amt[month]["dates"].append(date)
             total_amt[month]["total"]+= expense["Amount"]
+
+        with open(monthly_file,"w",newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Month", "Total Amount"]) 
+            for month,data in sorted(total_amt.items()):
+                month_key = total_amt[month]["dates"][0][:7]
+                writer.writerow([month_key,data['total']])
 
         for month,data in sorted(total_amt.items()):
             print(f"\nMonth : {month}")
@@ -233,8 +250,14 @@ class Expense:
                     print(f"{expense['Date']:<15} Rs.{expense['Amount']:>8.2f}")
             print("-" * 25)
             print(f"{'Total':<15} Rs.{data['total']:>8.2f}")
+
+        print(f"\nSummary added to file : {monthly_file}")
         
-        input("press 'Enter' to return to menu")
+        input("\nPress 'Enter' to return to menu\n")
+
+    #def chart(self):
+        #Convert "2026-05" → "May 2026" for display
+        #labels = [datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in sorted_months]
 
     def run_program(self):
         self.display_heading()
@@ -242,7 +265,7 @@ class Expense:
         while True:
             try:
                 self.display_menu()
-                choice = int(input("Choose any one option (1/2/3/4/5/6) : "))
+                choice = int(input("Choose any one option (1/2/3/4/5/6/7) : "))
                 if choice == 1:
                     print("\n")
                     self.add_expense()
@@ -253,8 +276,10 @@ class Expense:
                 elif choice == 4:
                     self.monthly_overview()
                 elif choice == 5:
-                    print("code Left")
+                    self.chart()
                 elif choice == 6:
+                    print("code left")
+                elif choice == 7:
                     print("\nExiting the program .....\n")
                     break
                 else:
