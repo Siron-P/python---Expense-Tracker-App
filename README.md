@@ -60,14 +60,13 @@ ___Stores all monthly summary:___
 1. Bar Chart
    
 <img width="640" height="480" alt="Figure_bar" src="https://github.com/user-attachments/assets/626976b8-2c89-4be1-8cd7-4dde442cc88a" />
-
-   
-3. Line Chart
+  
+2. Line Chart
 
 <img width="640" height="480" alt="Figure_line" src="https://github.com/user-attachments/assets/293595a9-aed5-4c98-bddc-2bbe326e51a7" />
 
    
-5. Pie Chart
+3. Pie Chart
 
 <img width="640" height="480" alt="Figure_1" src="https://github.com/user-attachments/assets/97ddd64a-1825-40d6-9bc5-39dd06352ab4" />
 
