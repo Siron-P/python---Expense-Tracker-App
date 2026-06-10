@@ -2,6 +2,7 @@ import csv
 import os
 from datetime import datetime
 import matplotlib.pyplot as plt
+import numpy as np
 
 class Expense:
     def __init__(self):
@@ -27,21 +28,23 @@ class Expense:
         if not os.path.exists(self.file_name):
             with open(self.file_name, "w", newline="") as file:
                     writer = csv.writer(file)
-                    writer.writerow(["Category","Amount", "Description", "Date"])
+                    writer.writerow(["ID","Category","Amount", "Description", "Date"])
             print(f"File not found! Created new file: {self.file_name}\n")
             return
         
         self.expenses.clear()
         with open(self.file_name,'r',newline="") as file:
                 reader = csv.reader(file)
-                next(reader, None) #header row will be skipped
+                next(reader, None) #header row will be skipp
+
                 for row in reader: 
                         if row:  #Checking if row is empty or nott
                             self.expenses.append({
-                                "Category": row[0],
-                                "Amount": float(row[1]),
-                                "Description": row[2],
-                                "Date": row[3]
+                                "ID" : row[0],
+                                "Category": row[1],
+                                "Amount": float(row[2]),
+                                "Description": row[3],
+                                "Date": row[4]
                             })
         print(f"File found! Loaded {len(self.expenses)} expenses from {self.file_name}\n")
 
@@ -177,7 +180,7 @@ class Expense:
             category = expense["Category"]
             total_category[category] = total_category.get(category,0)+expense["Amount"]
 
-        print("CATEGORIES :\n")
+        print("\nCATEGORIES :\n")
         print("1. Food")
         print("2. Transport")
         print("3. Entertainment")
@@ -190,13 +193,13 @@ class Expense:
 
         all_category = {1:"Food",2:"Transport",3:"Entertainment",4:"Bills",5:"Shopping",6:"Education",7:"Other"}
 
+        print("-"*65)
+
         if choose_exp == 8:
             for category, total in sorted(total_category.items()):
-                print("-"*70)
                 print(f"{category:<20}Rs.{total:.2f}")
 
         elif choose_exp in all_category:
-            print("-"*66)
             for id, expenses in enumerate(self.expenses,1):
                 if expenses['Category'] == all_category[choose_exp]:
                     print(f"{expenses['Date']:<12}{expenses['Category']:<15}{expenses['Description']:<20} Rs. {expenses['Amount']:<10}")
@@ -255,9 +258,71 @@ class Expense:
         
         input("\nPress 'Enter' to return to menu\n")
 
-    #def chart(self):
-        #Convert "2026-05" → "May 2026" for display
-        #labels = [datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in sorted_months]
+    def bar_chart(self):
+        
+        if not self.expenses:
+            print("No Expenses Found!\n")
+            return
+        
+        total_category = {}
+        for expense in self.expenses:
+            category = expense["Category"]
+            total_category[category] = total_category.get(category,0)+expense["Amount"]
+
+        x_category = list(total_category.keys())
+        y_category = list(total_category.values())
+
+        plt.bar(x_category,y_category,color='black',linewidth= 0.8)
+        plt.title('Expenses Bar Chart',fontsize=20,fontname='DejaVu Serif',fontweight='bold')
+        plt.xlabel('Categories',fontsize=15,fontname='DejaVu Serif',fontweight='bold')
+        plt.ylabel('Amount',fontsize=15,fontname='DejaVu Serif',fontweight='bold')
+        plt.tight_layout()
+        plt.show()
+
+        input("\nPress 'Enter' to return to menu\n")
+
+    def line_chart(self):
+        if not self.expenses:
+            print("No Expenses Found!\n")
+            return
+        
+        total_category = {}
+        for expense in self.expenses:
+            category = expense["Category"]
+            total_category[category] = total_category.get(category,0)+expense["Amount"]
+
+        x_category = list(total_category.keys())
+        y_category = list(total_category.values())
+
+        plt.plot(x_category,y_category,marker="o",color='black')
+        plt.title('Expenses Bar Chart',fontsize=20,fontname='DejaVu Serif',fontweight='bold')
+        plt.xlabel('Categories',fontsize=15,fontname='DejaVu Serif',fontweight='bold')
+        plt.ylabel('Amount',fontsize=15,fontname='DejaVu Serif',fontweight='bold')
+        plt.tight_layout()
+        plt.show()
+
+        input("\nPress 'Enter' to return to menu\n")
+
+    def pie_chart(self):
+        if not self.expenses:
+            print("No Expenses Found!\n")
+            return
+        
+        total_category = {}
+        for expense in self.expenses:
+            category = expense["Category"]
+            total_category[category] = total_category.get(category,0)+expense["Amount"]
+
+        x_category = list(total_category.keys())
+        y_category = list(total_category.values())
+
+        plt.pie(y_category,labels=x_category, colors=['lightgreen','mediumseagreen','seagreen','teal','mediumaquamarine','darkgreen'])
+        plt.title('Expenses Pie Chart',fontsize=20,fontname='DejaVu Serif',fontweight='bold')
+        plt.tight_layout()
+        plt.legend(title="Categories",loc='lower right',frameon=True,ncol=2,markerscale=1.5)
+        plt.show()
+
+        input("\nPress 'Enter' to return to menu\n")
 
     def run_program(self):
         self.display_heading()
@@ -276,7 +341,22 @@ class Expense:
                 elif choice == 4:
                     self.monthly_overview()
                 elif choice == 5:
-                    self.chart()
+                    self.display_heading()
+                    print("Expenses Chart")
+                    print(f"{'-'*37}")
+                    print("Type of Charts : \n ")
+                    print("1. Bar Chart ")
+                    print("2. Line Chart")
+                    print("3. Pie Chart\n")
+                    chart_input = int(input("Choose any one option (1/2/3) : "))
+                    if chart_input == 1:
+                        self.bar_chart()
+                    elif chart_input == 2:
+                        self.line_chart()
+                    elif chart_input == 3:
+                        self.pie_chart()
+                    else:
+                        print("Please enter valid option!")
                 elif choice == 6:
                     print("code left")
                 elif choice == 7:
