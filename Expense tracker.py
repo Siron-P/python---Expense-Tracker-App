@@ -28,7 +28,7 @@ class Expense:
         if not os.path.exists(self.file_name):
             with open(self.file_name, "w", newline="") as file:
                     writer = csv.writer(file)
-                    writer.writerow(["ID","Category","Amount", "Description", "Date"])
+                    writer.writerow(["Category","Amount", "Description", "Date"])
             print(f"File not found! Created new file: {self.file_name}\n")
             return
         
@@ -40,11 +40,10 @@ class Expense:
                 for row in reader: 
                         if row:  #Checking if row is empty or nott
                             self.expenses.append({
-                                "ID" : row[0],
-                                "Category": row[1],
-                                "Amount": float(row[2]),
-                                "Description": row[3],
-                                "Date": row[4]
+                                "Category": row[0],
+                                "Amount": float(row[1]),
+                                "Description": row[2],
+                                "Date": row[3]
                             })
         print(f"File found! Loaded {len(self.expenses)} expenses from {self.file_name}\n")
 
@@ -202,7 +201,7 @@ class Expense:
         elif choose_exp in all_category:
             for id, expenses in enumerate(self.expenses,1):
                 if expenses['Category'] == all_category[choose_exp]:
-                    print(f"{expenses['Date']:<12}{expenses['Category']:<15}{expenses['Description']:<20} Rs. {expenses['Amount']:<10}")
+                    print(f"{expenses['Date']:<12}{expenses['Category']:<19}{expenses['Description']:<20} Rs. {expenses['Amount']:<10}")
 
             user_choice = all_category[choose_exp]
             total = total_category.get(user_choice,0)
@@ -221,6 +220,12 @@ class Expense:
     def monthly_overview(self):
         self.display_heading()
         print(f"MONTHLY OVERVIEW\n{'_'*37}")
+
+        if not self.expenses:
+            print("\nNo Expenses Found!")
+            print("Please add expenses from the option 1.")
+            input("Press 'enter' to return to menu.\n")
+            return
 
         monthly_file = "monthly_summary.csv"
         if not os.path.exists(monthly_file):
@@ -261,7 +266,9 @@ class Expense:
     def bar_chart(self):
         
         if not self.expenses:
-            print("No Expenses Found!\n")
+            print("\nNo Expenses Found!")
+            print("Please add expenses from the option 1.")
+            input("Press 'enter' to return to menu.\n")
             return
         
         total_category = {}
@@ -283,7 +290,9 @@ class Expense:
 
     def line_chart(self):
         if not self.expenses:
-            print("No Expenses Found!\n")
+            print("\nNo Expenses Found!")
+            print("Please add expenses from the option 1.")
+            input("Press 'enter' to return to menu.\n")
             return
         
         total_category = {}
@@ -305,7 +314,9 @@ class Expense:
 
     def pie_chart(self):
         if not self.expenses:
-            print("No Expenses Found!\n")
+            print("\nNo Expenses Found!")
+            print("Please add expenses from the option 1.")
+            input("Press 'enter' to return to menu.\n")
             return
         
         total_category = {}
@@ -322,6 +333,62 @@ class Expense:
         plt.legend(title="Categories",loc='lower right',frameon=True,ncol=2,markerscale=1.5)
         plt.show()
 
+        input("\nPress 'Enter' to return to menu\n")
+
+    def delete(self):
+        self.display_heading()
+        print(f"Delete Expense\n{'_'*37}")
+        
+        if not self.expenses:
+            print("\nNo Expenses Found!")
+            print("Please add expenses from the option 1.")
+            input("Press 'enter' to return to menu.\n")
+            return
+
+        with open('Expense.csv','r',newline="") as file:
+            reader = list(csv.reader(file))
+
+            header = reader[0]
+            data = reader[1:]
+
+            print("\n")
+            print(f"{"ID":<5} {"Category":<18} {"Amount":<9} {"Date":<12}")
+
+            for i,row in enumerate(data,start=1):
+                print(f"{i:<5} {row[0]:<18} {row[1]:<9} {row[2]:<12}")
+
+            print("_"*37)
+
+            delete_id = int(input("\nChoose ID no. which you would like to delete : "))
+            print(f"ID : {delete_id}")
+
+            if 0<delete_id<=len(data):
+                confirm = input("Are you sure, you want to delete? : ")
+
+                if confirm.lower() == "yes":
+                    del data[delete_id-1]
+
+                    with open('Expense.csv', 'w', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow(header)
+                        writer.writerows(data)
+                    
+                    self.expenses = []
+                    for row in data:
+                        self.expenses.append({
+                            "Category": row[0],
+                            "Amount":   float(row[1]),
+                            "Date":     row[2]
+                    })
+
+                    print("_"*37)
+                    print(f"Expenses Deleted!")
+                    print("_"*37)
+                else:
+                    print("Deletion cancelled.")
+            else:
+                print("Invalid ID! Please choose a valid number.")
+        
         input("\nPress 'Enter' to return to menu\n")
 
     def run_program(self):
@@ -358,7 +425,7 @@ class Expense:
                     else:
                         print("Please enter valid option!")
                 elif choice == 6:
-                    print("code left")
+                    self.delete()
                 elif choice == 7:
                     print("\nExiting the program .....\n")
                     break
