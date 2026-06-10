@@ -10,6 +10,14 @@ A personal expense tracker built in Python as a beginner project that helps you 
   - Auto-save and load expenses from CSV file
   - CSV file for Monthly Summary
 
+## Built With
+ 
+  - Python 3 - Core Language
+  - OS Module - File Handling
+  - CSV Module - Storing Data
+  - DateTime - Date parsing and Formatting
+  - Matplotlib - Generating Charts
+
 ### Menu Options
 
 1. Add Expense
@@ -30,37 +38,42 @@ A personal expense tracker built in Python as a beginner project that helps you 
 6. Education
 7. Other
 
+
 ## CSV Files
 
 ### expense.csv
 
 ___Stores all expense records:___
 
-Category,Amount,Description,Date
+<img width="605" height="185" alt="image" src="https://github.com/user-attachments/assets/c81aa487-d7d5-4a52-afb8-a949c6c645df" />
 
-Bills,20000.0,Tution fee,2026-05-21
-
-Transport,2500.0,tour,2026-02-05
 
 
 ### monthly_summary.csv
 
 ___Stores all monthly summary:___
 
-Month,Total Amount
+<img width="354" height="181" alt="image" src="https://github.com/user-attachments/assets/80d223e0-dc02-497e-88c0-610b2fa0a50a" />
 
-2026-02,2790.0
+## Charts (Matplotlib)
 
-2026-03,2700.0
+1. Bar Chart
+   
+<img width="640" height="480" alt="Figure_bar" src="https://github.com/user-attachments/assets/626976b8-2c89-4be1-8cd7-4dde442cc88a" />
 
-## Built With
- 
-  - Python 3 - Core Language
-  - OS Module - File Handling
-  - DateTime - Date parsing and Formatting
+   
+3. Line Chart
+
+<img width="640" height="480" alt="Figure_line" src="https://github.com/user-attachments/assets/293595a9-aed5-4c98-bddc-2bbe326e51a7" />
+
+   
+5. Pie Chart
+
+<img width="640" height="480" alt="Figure_1" src="https://github.com/user-attachments/assets/97ddd64a-1825-40d6-9bc5-39dd06352ab4" />
+
 
 ## Future Improvements 
 
   - Deleting Specific Expense Records
-  - Adding charts from matplotlib
+  - Adding SQL DB
   - Add GUI using TKinter
