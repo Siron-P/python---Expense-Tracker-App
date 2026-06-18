@@ -9,6 +9,7 @@ A personal expense tracker built in Python as a beginner project that helps you 
   - Monthly overview grouped by month
   - Auto-save and load expenses from CSV file
   - CSV file for Monthly Summary
+  - Deleting Specific Expense Records
 
 ## Built With
  
@@ -73,6 +74,5 @@ ___Stores all monthly summary:___
 
 ## Future Improvements 
 
-  - Deleting Specific Expense Records
   - Adding SQL DB
   - Add GUI using TKinter
