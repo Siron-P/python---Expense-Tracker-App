@@ -1,14 +1,16 @@
-import csv
 import os
+import sqlite3
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
 class Expense:
     def __init__(self):
-        self.expenses = []
-        self.categories = ["Food","Transport","1tainment","Bills","Shopping","Education","Others"]
-        self.file_name = "Expense.csv"
+        self.categories = ["Food","Transport","Entertainment","Bills","Shopping","Education","Others"]
+        self.conn = sqlite3.connect("Expenses.db")
+        self.conn.row_factory = sqlite3.Row
+        self.cursor = self.conn.cursor()
+        self.create_table()
         self.load_expense()
 
     def display_heading(self):
@@ -24,38 +26,29 @@ class Expense:
         print("7. Exit the program....")
         print("_"*37,"\n")
 
+    def create_table(self):
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS expenses(
+                id          INTEGER PRIMARY KEY  AUTOINCREMENT,
+                date        TEXT    NOT NULL,
+                category    TEXT    NOT NULL,
+                description TEXT,
+                amount      REAL    NOT NULL
+            )
+        """)
+
     def load_expense(self):
-        if not os.path.exists(self.file_name):
-            with open(self.file_name, "w", newline="") as file:
-                    writer = csv.writer(file)
-                    writer.writerow(["Category","Amount", "Description", "Date"])
-            print(f"File not found! Created new file: {self.file_name}\n")
-            return
-        
-        self.expenses.clear()
-        with open(self.file_name,'r',newline="") as file:
-                reader = csv.reader(file)
-                next(reader, None) #header row will be skipp
+        self.cursor.execute("SELECT * FROM expenses ORDER BY date DESC")
+        rows = self.cursor.fetchall()
+        self.expenses = [dict(row) for row in rows]
+        print(f"Loaded {len(self.expenses)} expenses")
 
-                for row in reader: 
-                        if row:  #Checking if row is empty or nott
-                            self.expenses.append({
-                                "Category": row[0],
-                                "Amount": float(row[1]),
-                                "Description": row[2],
-                                "Date": row[3]
-                            })
-        print(f"File found! Loaded {len(self.expenses)} expenses from {self.file_name}\n")
-
-    def save_to_csv(self, expense):
-        with open(self.file_name,"a",newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow([
-                expense["Category"],
-                expense["Amount"],
-                expense["Description"],
-                expense["Date"]
-            ])
+    def save_to_db(self,expense):
+        self.cursor.execute(
+            "INSERT INTO expenses (Category, Amount, Description, Date) VALUES (?,?,?,?)",
+            (expense["Category"],expense["Amount"],expense["Description"],expense["Date"])
+        )
+        self.conn.commit()
 
     def add_expense(self):
         self.display_heading()
@@ -124,9 +117,8 @@ class Expense:
             "Date" : date
         }
 
-        #calling save_to_csv() and printing saved details
-        self.save_to_csv(expenses)
-        self.expenses.append(expenses)
+        #calling save_to_db() and printing saved details
+        self.save_to_db(expenses)
 
         print(f'{"-"*37}')
         print("EXPENSE ADDED!")
@@ -188,32 +180,35 @@ class Expense:
         print("6. Education")
         print("7. Other")
         print("8. All")
-        choose_exp = int(input("🔢 Choose any option for its expense (1/2/3/4/5/6/7/8) : "))
+        try:
+            choose_exp = int(input("🔢 Choose any option for its expense (1/2/3/4/5/6/7/8) : "))
 
-        all_category = {1:"Food",2:"Transport",3:"Entertainment",4:"Bills",5:"Shopping",6:"Education",7:"Other"}
+            all_category = {1:"Food",2:"Transport",3:"Entertainment",4:"Bills",5:"Shopping",6:"Education",7:"Others"}
 
-        print("-"*65)
+            print("-"*65)
 
-        if choose_exp == 8:
-            for category, total in sorted(total_category.items()):
-                print(f"{category:<20}Rs.{total:.2f}")
+            if choose_exp == 8:
+                for category, total in sorted(total_category.items()):
+                    print(f"{category:<20}Rs.{total:.2f}")
 
-        elif choose_exp in all_category:
-            for id, expenses in enumerate(self.expenses,1):
-                if expenses['Category'] == all_category[choose_exp]:
-                    print(f"{expenses['Date']:<12}{expenses['Category']:<19}{expenses['Description']:<20} Rs. {expenses['Amount']:<10}")
+            elif choose_exp in all_category:
+                for id, expenses in enumerate(self.expenses,1):
+                    if expenses['Category'] == all_category[choose_exp]:
+                        print(f"{expenses['Date']:<12}{expenses['Category']:<19}{expenses['Description']:<20} Rs. {expenses['Amount']:<10}")
 
-            user_choice = all_category[choose_exp]
-            total = total_category.get(user_choice,0)
-            if total == 0:
-                print(f"No expense found in this category : {all_category[choose_exp]} ")
+                user_choice = all_category[choose_exp]
+                total = total_category.get(user_choice,0)
+                if total == 0:
+                    print(f"No expense found in this category : {all_category[choose_exp]} ")
+                else:
+                    print("="*66)
+                    print(f"{user_choice:<20} Rs.{total:.2f}")
+                    print("="*66)
+
             else:
-                print("="*66)
-                print(f"{user_choice:<20} Rs.{total:.2f}")
-                print("="*66)
-
-        else:
-            print("Please choose valid option.")
+                print("Please choose valid option.")
+        except ValueError:
+            print("Please enter a valid number!")
 
         input("\nPress 'Enter' to return to menu.\n")
 
@@ -227,12 +222,6 @@ class Expense:
             input("Press 'enter' to return to menu.\n")
             return
 
-        monthly_file = "monthly_summary.csv"
-        if not os.path.exists(monthly_file):
-            with open(monthly_file,"w",newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(["Date","Amount"])
-
         total_amt = {}
         for expense in self.expenses:
             date = expense["Date"]
@@ -241,13 +230,6 @@ class Expense:
                 total_amt[month] =  {"dates":[],"total":0}
             total_amt[month]["dates"].append(date)
             total_amt[month]["total"]+= expense["Amount"]
-
-        with open(monthly_file,"w",newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["Month", "Total Amount"]) 
-            for month,data in sorted(total_amt.items()):
-                month_key = total_amt[month]["dates"][0][:7]
-                writer.writerow([month_key,data['total']])
 
         for month,data in sorted(total_amt.items()):
             print(f"\nMonth : {month}")
@@ -258,8 +240,6 @@ class Expense:
                     print(f"{expense['Date']:<15} Rs.{expense['Amount']:>8.2f}")
             print("-" * 25)
             print(f"{'Total':<15} Rs.{data['total']:>8.2f}")
-
-        print(f"\nSummary added to file : {monthly_file}")
         
         input("\nPress 'Enter' to return to menu\n")
 
@@ -344,50 +324,35 @@ class Expense:
             print("Please add expenses from the option 1.")
             input("Press 'enter' to return to menu.\n")
             return
+        
+        print(f"\n{'ID:<5'} {"Category":<18} {"Amount":<9} {"Date":<12}")
+        print("-"*65)
+        for expense in self.expenses:
+            print(f"{expense['ID']:<5} {expense['Category']:<18} {expense['Amount']:<9} {expense['Date']:<12}")
 
-        with open('Expense.csv','r',newline="") as file:
-            reader = list(csv.reader(file))
-
-            header = reader[0]
-            data = reader[1:]
-
-            print("\n")
-            print(f"{"ID":<5} {"Category":<18} {"Amount":<9} {"Date":<12}")
-
-            for i,row in enumerate(data,start=1):
-                print(f"{i:<5} {row[0]:<18} {row[1]:<9} {row[2]:<12}")
-
-            print("_"*37)
-
+        try:
             delete_id = int(input("\nChoose ID no. which you would like to delete : "))
             print(f"ID : {delete_id}")
-
-            if 0<delete_id<=len(data):
-                confirm = input("Are you sure, you want to delete? : ")
-
-                if confirm.lower() == "yes":
-                    del data[delete_id-1]
-
-                    with open('Expense.csv', 'w', newline='') as file:
-                        writer = csv.writer(file)
-                        writer.writerow(header)
-                        writer.writerows(data)
-                    
-                    self.expenses = []
-                    for row in data:
-                        self.expenses.append({
-                            "Category": row[0],
-                            "Amount":   float(row[1]),
-                            "Date":     row[2]
-                    })
-
-                    print("_"*37)
-                    print(f"Expenses Deleted!")
-                    print("_"*37)
-                else:
-                    print("Deletion cancelled.")
-            else:
-                print("Invalid ID! Please choose a valid number.")
+        except ValueError:
+            print("Please enter a valid number!")
+            input("\nPress 'Enter' to return to menu\n")
+            return
+        
+        if delete_id<1 or delete_id>len(self.expenses):
+            print("Please enter valid ID!")
+            input("\nPress 'Enter' to return to menu\n")
+            return
+        
+        confirm = input(f"Are you sure you want to delete {delete_id}? (Yes/No) : ")
+        if confirm.lower == "yes":
+            self.cursor.execute("DELETE FROM expenses WHERE id = ?",(delete_id))
+            self.conn.commit()
+            self.load_expense()
+            print("-")*37
+            print(f"Expenses Deleted!")
+            print("-")*37
+        else:
+            print("Deletion cancelled.")
         
         input("\nPress 'Enter' to return to menu\n")
 
